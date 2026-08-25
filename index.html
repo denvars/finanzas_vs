@@ -34,24 +34,34 @@ header{background:#fff;border-bottom:1px solid #E3E3DE;position:sticky;top:0;z-i
 
 /* Tabs */
 nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E3E3DE;display:flex;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
-nav div{flex:1;text-align:center;padding:10px 1px;font-size:10px;color:#8a8a85;cursor:pointer;min-width:0}
+nav div{flex:1;text-align:center;padding:9px 2px 8px;font-size:11.5px;color:#8a8a85;cursor:pointer;min-width:0;line-height:1.25}
 nav div.on{color:#1F4E78;font-weight:600}
-nav div i{display:block;font-size:17px;font-style:normal;margin-bottom:2px}
+nav div i{display:block;font-size:20px;font-style:normal;margin-bottom:3px}
+#btnSync{white-space:nowrap;font-size:12px;padding:6px 9px;border:1px solid #E3E3DE;border-radius:8px}
+.seg{display:flex;gap:6px;margin:12px 0 0;background:#EDEDE8;padding:3px;border-radius:10px}
+.seg button{flex:1;background:transparent;color:#8a8a85;font-size:13px;padding:8px 6px;border-radius:8px;font-weight:500}
+.seg button.on{background:#fff;color:#1F4E78;font-weight:600}
 
 .card{background:#fff;border:1px solid #E3E3DE;border-radius:12px;padding:14px 16px;margin:12px 0}
 h2{font-size:15px;margin:0 0 12px;color:#1F4E78;font-weight:600}
 h3{font-size:13px;margin:18px 0 8px;color:#8a8a85;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
 
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.kpi,.kpis>div{min-width:0}
+.kpi .v{overflow-wrap:anywhere}
 .kpi{background:#fff;border:1px solid #E3E3DE;border-radius:12px;padding:12px 14px}
 .kpi .l{font-size:11px;color:#8a8a85;margin-bottom:2px}
 .kpi .v{font-size:19px;font-weight:600}
 
 label.f{display:block;font-size:11px;color:#8a8a85;margin-bottom:4px}
-input,select,textarea{width:100%;font-size:16px;padding:9px 10px;border:1px solid #D9D9D4;border-radius:8px;background:#fff;font-family:inherit;color:#1a1a1a}
+input,select,textarea{width:100%;max-width:100%;min-width:0;font-size:16px;padding:9px 10px;border:1px solid #D9D9D4;border-radius:8px;background:#fff;font-family:inherit;color:#1a1a1a}
 input:focus,select:focus{outline:none;border-color:#1F4E78}
-.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+/* iOS le da un ancho intrinseco a date/month que revienta la columna */
+input[type=date],input[type=month]{display:block}
+.fr{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:10px}
+.fr>div{min-width:0}
 .fr.one{grid-template-columns:1fr}
+@media(min-width:420px){.fr{grid-template-columns:1fr 1fr}.fr.one{grid-template-columns:1fr}}
 button{font-size:14px;padding:10px 14px;border-radius:8px;border:none;background:#1F4E78;color:#fff;cursor:pointer;font-family:inherit;font-weight:500}
 button:active{opacity:.8}
 button.sec{background:#fff;color:#1F4E78;border:1px solid #C4D4E2}
@@ -79,6 +89,7 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
 .chip{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:#F0F0EC;color:#5F5E5A}
 .chip.pay{background:#E6F1FB;color:#0C447C;font-weight:600}
 .chip.cash{background:#EAF3DE;color:#3B6D11}
+.chip.cred{background:#EEEDFE;color:#3C3489;font-weight:600}
 .note{font-size:12px;color:#8a8a85;line-height:1.6}
 .aviso{border-radius:12px;padding:13px 15px;margin:12px 0 0;display:flex;gap:11px;align-items:flex-start}
 .aviso.warn{background:#FAEEDA;border:1px solid #EF9F27}
@@ -94,7 +105,7 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
 .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#C0392B;vertical-align:top;margin-left:1px}
 .split{display:flex;gap:8px;flex-wrap:wrap}
 .split button{flex:1;min-width:130px}
-@media(min-width:640px){.kpis{grid-template-columns:repeat(4,1fr)}.fr{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:640px){.kpis{grid-template-columns:repeat(4,1fr)}.fr{grid-template-columns:repeat(3,1fr)}.fr.one{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -136,6 +147,7 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
   <header><div class="hin">
     <div class="avatar" id="hAv"></div>
     <div class="who"><b id="hName"></b><span id="hSub"></span></div>
+    <button class="gh" id="btnSync" onclick="go('sync')" aria-label="Respaldo">⇅ Respaldo</button>
     <button class="gh" onclick="logout()">Salir</button>
   </div></header>
 
@@ -152,6 +164,7 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
         <div class="kpi"><div class="l">Balance</div><div class="v mono" id="kBal">$0</div></div>
         <div class="kpi"><div class="l">Presupuesto usado</div><div class="v mono" id="kPct">0%</div></div>
       </div>
+      <div class="card hide" id="preResumen"></div>
       <div class="card hide" id="tarResumen"></div>
       <div class="card hide" id="pagosBox"></div>
       <div class="card"><h2>Gastos por categoria</h2><div id="donut"></div></div>
@@ -164,13 +177,14 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
         <div class="fr">
           <div><label class="f">Fecha</label><input type="date" id="mFecha"></div>
           <div><label class="f">Tipo</label><select id="mTipo" onchange="fillCats()"><option>Gasto</option><option>Ingreso</option><option>Pago de tarjeta</option></select></div>
-          <div id="wCat"><label class="f">Categoria</label><select id="mCat"></select></div>
+          <div id="wCat"><label class="f">Categoria</label><select id="mCat" onchange="togglePre()"></select></div>
         </div>
         <div class="fr">
           <div id="wTar"><label class="f">Pagado con</label><select id="mTar"></select><div id="tarHint" class="note hide" style="font-size:11px;margin-top:5px">Registra tus tarjetas en <b>Tarjetas</b> para elegirlas aqui.</div></div>
           <div><label class="f">Descripcion</label><input type="text" id="mDesc" placeholder="Supermercado"></div>
           <div><label class="f">Monto</label><input type="number" id="mMonto" inputmode="decimal" step="0.01" placeholder="0.00"></div>
         </div>
+        <div id="wPre" class="fr one hide"><div><label class="f">¿A que credito corresponde?</label><select id="mPre"></select></div></div>
         <div id="mErr" class="err hide">Revisa la fecha, elige una categoria y escribe un monto mayor a cero.</div>
         <div id="mErrTar" class="err hide">Elige con que pagaste este movimiento.</div>
         <button class="full" style="margin-top:4px" onclick="addMov()">Agregar</button>
@@ -186,8 +200,14 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
       </div>
     </section>
 
-    <section id="v-tar" class="hide">
-      <div class="card" style="margin-top:12px">
+    <section id="v-deu" class="hide">
+      <div class="seg">
+        <button id="segT" class="on" onclick="segDeu('tar')">Tarjetas</button>
+        <button id="segP" onclick="segDeu('pre')">Creditos</button>
+      </div>
+
+      <div id="sub-tar">
+      <div class="card">
         <h2>Nueva tarjeta</h2>
         <div class="fr">
           <div><label class="f">Nombre</label><input type="text" id="tNom" placeholder="BBVA Oro"></div>
@@ -202,6 +222,25 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
         <button class="full" onclick="addTar()">Agregar tarjeta</button>
       </div>
       <div id="tarList"></div>
+      </div>
+
+      <div id="sub-pre" class="hide">
+      <div class="card">
+        <h2>Nuevo credito</h2>
+        <p class="note">Captura lo que debes hoy. Cada mensualidad que registres en Movimientos ira bajando el saldo.</p>
+        <div class="fr" style="margin-top:12px">
+          <div><label class="f">Nombre</label><input type="text" id="pNom" placeholder="Carro"></div>
+          <div><label class="f">Saldo actual</label><input type="number" id="pSaldo" inputmode="decimal" placeholder="180000"></div>
+          <div><label class="f">Mensualidad</label><input type="number" id="pMens" inputmode="decimal" placeholder="6500"></div>
+        </div>
+        <div class="fr">
+          <div><label class="f">Dia de pago</label><input type="number" id="pDia" inputmode="numeric" min="1" max="31" placeholder="5"></div>
+        </div>
+        <div id="pErr" class="err hide">Escribe nombre, saldo mayor a cero y un dia entre 1 y 31.</div>
+        <button class="full" onclick="addPre()">Agregar credito</button>
+      </div>
+      <div id="preList"></div>
+      </div>
     </section>
 
     <section id="v-metas" class="hide">
@@ -252,10 +291,9 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
   <nav>
     <div class="on" data-v="dash" onclick="go('dash')"><i>◧</i>Resumen</div>
     <div data-v="mov" onclick="go('mov')"><i>≡</i>Movs</div>
-    <div data-v="pres" onclick="go('pres')"><i>◑</i>Presup</div>
-    <div data-v="tar" onclick="go('tar')"><i>▭</i>Tarjetas</div>
+    <div data-v="pres" onclick="go('pres')"><i>◑</i>Presupuesto</div>
+    <div data-v="deu" onclick="go('deu')"><i>▭</i>Deudas</div>
     <div data-v="metas" onclick="go('metas')"><i>◎</i>Metas</div>
-    <div data-v="sync" onclick="go('sync')"><i>⇅</i>Respaldo</div>
   </nav>
 </div>
 
@@ -274,15 +312,16 @@ async function sha(t){var b=await crypto.subtle.digest("SHA-256",new TextEncoder
 
 function getProfiles(){try{return JSON.parse(localStorage.getItem(PKEY))||[]}catch(e){return[]}}
 function setProfiles(a){localStorage.setItem(PKEY,JSON.stringify(a))}
-function blankData(){var b={};CG.forEach(function(c){b[c]=0});return{movimientos:[],presupuestos:b,metas:[],tarjetas:[],nextM:1,nextG:1,nextT:1,ultimoRespaldo:null}}
+function blankData(){var b={};CG.forEach(function(c){b[c]=0});return{movimientos:[],presupuestos:b,metas:[],tarjetas:[],prestamos:[],nextM:1,nextG:1,nextT:1,nextP:1,ultimoRespaldo:null}}
 function dataKey(id){return "fin_data_"+id}
 function migra(d){
   var b=blankData();
-  d.movimientos=(d.movimientos||[]).map(function(m){if(m.tar===undefined)m.tar=null;return m});
+  d.movimientos=(d.movimientos||[]).map(function(m){if(m.tar===undefined)m.tar=null;if(m.pre===undefined)m.pre=null;return m});
+  d.prestamos=d.prestamos||[];
   d.metas=d.metas||[];
   d.tarjetas=(d.tarjetas||[]).map(function(t){if(t.saldoIni===undefined)t.saldoIni=t.saldo||0;delete t.saldo;return t});
   d.presupuestos=Object.assign(b.presupuestos,d.presupuestos||{});
-  d.nextM=d.nextM||1;d.nextG=d.nextG||1;d.nextT=d.nextT||1;
+  d.nextM=d.nextM||1;d.nextG=d.nextG||1;d.nextT=d.nextT||1;d.nextP=d.nextP||1;
   if(d.ultimoRespaldo===undefined)d.ultimoRespaldo=null;
   return d;
 }
@@ -336,13 +375,19 @@ function enter(p){
   document.getElementById("fsaBox").classList.toggle("hide",!window.showSaveFilePicker);
   document.getElementById("linkState").textContent="";
   document.getElementById("syncMsg").textContent="";
-  fillCats();go("dash");
+  fillCats();segDeu("tar");go("dash");
 }
 function logout(){P=null;D=null;fileHandle=null;document.getElementById("app").classList.add("hide");document.getElementById("login").classList.remove("hide");renderLogin()}
 function go(v){
-  ["dash","mov","pres","tar","metas","sync"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("hide",x!==v)});
+  ["dash","mov","pres","deu","metas","sync"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("hide",x!==v)});
   document.querySelectorAll("nav div").forEach(function(d){d.classList.toggle("on",d.dataset.v===v)});
   window.scrollTo(0,0);renderAll();
+}
+function segDeu(cual){
+  document.getElementById("sub-tar").classList.toggle("hide",cual!=="tar");
+  document.getElementById("sub-pre").classList.toggle("hide",cual!=="pre");
+  document.getElementById("segT").classList.toggle("on",cual==="tar");
+  document.getElementById("segP").classList.toggle("on",cual==="pre");
 }
 
 /* ---------- Movimientos ---------- */
@@ -363,6 +408,20 @@ function fillCats(){
   sel.value="";
   sel.disabled=pago&&!n;
   document.getElementById("tarHint").classList.toggle("hide",n>0);
+  togglePre();
+}
+/* El selector de credito solo aparece en gastos de la categoria Deudas:
+   asi no estorba en los demas movimientos. */
+function togglePre(){
+  var t=document.getElementById("mTipo").value,c=document.getElementById("mCat").value;
+  var sel=document.getElementById("mPre");
+  var mostrar=t==="Gasto"&&c==="Deudas"&&D&&D.prestamos&&D.prestamos.length>0;
+  document.getElementById("wPre").classList.toggle("hide",!mostrar);
+  if(mostrar){
+    sel.innerHTML='<option value="">No es de un credito registrado</option>'+
+      D.prestamos.map(function(p){return'<option value="'+p.id+'">'+esc(p.nombre)+'</option>'}).join("");
+    sel.value="";
+  }
 }
 function addMov(){
   var f=document.getElementById("mFecha").value,t=document.getElementById("mTipo").value,
@@ -378,7 +437,8 @@ function addMov(){
   if(!f||!c||isNaN(m)||m<=0){eC.classList.remove("hide");return}
   if(!tarRaw){eT.textContent=pago?"Elige a que tarjeta corresponde el pago.":"Elige con que pagaste este movimiento.";
               eT.classList.remove("hide");return}
-  D.movimientos.push({id:D.nextM++,fecha:f,tipo:t,cat:c,desc:de,monto:m,tar:tar});
+  var preRaw=(t==="Gasto"&&c==="Deudas")?document.getElementById("mPre").value:"";
+  D.movimientos.push({id:D.nextM++,fecha:f,tipo:t,cat:c,desc:de,monto:m,tar:tar,pre:preRaw?parseInt(preRaw,10):null});
   save();document.getElementById("mDesc").value="";document.getElementById("mMonto").value="";
   document.getElementById("mes").value=f.slice(0,7);renderAll();
 }
@@ -397,6 +457,10 @@ function renderMovs(){
     if(m.tipo!=="Ingreso"){
       pill=tn?' <span class="chip pay">'+esc(tn)+'</span>'
              :' <span class="chip cash">Efectivo o debito</span>';
+    }
+    if(m.pre){
+      var pn=(D.prestamos.filter(function(p){return p.id===m.pre})[0]||{}).nombre;
+      if(pn)pill+=' <span class="chip cred">'+esc(pn)+'</span>';
     }
     return '<div class="prow"><div class="top"><b>'+esc(m.desc||m.cat)+'</b><span class="mono '+cls+'"'+(pago?' style="color:#5F5E5A"':'')+'>'+sig+money(m.monto)+'</span></div>'+
       '<div class="mt"><span class="chip">'+esc(m.cat)+'</span>'+pill+' · '+esc(m.fecha)+
@@ -562,6 +626,70 @@ function renderTarResumen(){
     (rank&&rank.m>0?'<div class="note">Mas usada este mes: <b>'+esc(rank.t.nombre)+'</b> con '+money(rank.m)+'</div>':'');
 }
 
+/* ---------- Creditos ---------- */
+function addPre(){
+  var n=document.getElementById("pNom").value.trim(),
+      s=parseFloat(document.getElementById("pSaldo").value),
+      me=parseFloat(document.getElementById("pMens").value)||0,
+      di=parseInt(document.getElementById("pDia").value,10);
+  if(!n||isNaN(s)||s<=0||!(di>=1&&di<=31)){document.getElementById("pErr").classList.remove("hide");return}
+  document.getElementById("pErr").classList.add("hide");
+  D.prestamos.push({id:D.nextP++,nombre:n,saldoIni:s,mensualidad:Math.max(0,me),dia:di});
+  save();
+  ["pNom","pSaldo","pMens","pDia"].forEach(function(x){document.getElementById(x).value=""});
+  fillCats();renderAll();
+}
+function pagosPre(id){return D.movimientos.filter(function(m){return m.tipo==="Gasto"&&m.pre===id})}
+function abonadoPre(id){return pagosPre(id).reduce(function(s,m){return s+m.monto},0)}
+function saldoPre(p){return Math.max(0,(p.saldoIni||0)-abonadoPre(p.id))}
+function deudaPre(){return D.prestamos.reduce(function(s,p){return s+saldoPre(p)},0)}
+function setSaldoIniPre(id,v){var p=D.prestamos.filter(function(x){return x.id===id})[0];if(p){p.saldoIni=Math.max(0,parseFloat(v)||0);save();renderAll()}}
+function delPre(id){
+  D.prestamos=D.prestamos.filter(function(p){return p.id!==id});
+  D.movimientos.forEach(function(m){if(m.pre===id)m.pre=null});
+  save();fillCats();renderAll();
+}
+function renderPre(){
+  var box=document.getElementById("preList");
+  if(!D.prestamos.length){box.innerHTML='<div class="card"><div class="empty">Sin creditos registrados.</div></div>';return}
+  var h='<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="note">Deuda total en creditos</span><span class="mono" style="font-size:20px;font-weight:600;color:#993C1D">'+money(deudaPre())+'</span></div></div>';
+  h+=D.prestamos.slice().sort(function(a,b){return nextDom(a.dia)-nextDom(b.dia)}).map(function(p){
+    var sal=saldoPre(p),ab=abonadoPre(p),n=pagosPre(p.id).length;
+    var pct=p.saldoIni>0?Math.round(ab/p.saldoIni*100):0;
+    var dp=nextDom(p.dia),np=daysTo(dp);
+    var urg=np<=3?"#C0392B":np<=7?"#BA7517":"#8a8a85";
+    var faltan=(p.mensualidad>0&&sal>0)?Math.ceil(sal/p.mensualidad):null;
+    return '<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center"><b>'+esc(p.nombre)+'</b>'+
+      '<span class="mono" style="font-size:18px;font-weight:600;color:'+(sal>0?"#993C1D":"#0F6E56")+'">'+money(sal)+'</span></div>'+
+      '<div class="bar" style="margin:9px 0 4px"><i style="width:'+Math.min(100,pct)+'%"></i></div>'+
+      '<div class="note">'+pct+'% liquidado · llevas '+money(ab)+' de '+money(p.saldoIni)+'</div>'+
+      (sal<=0?'<div class="note" style="color:#0F6E56;font-weight:600;margin-top:4px">Credito liquidado</div>':'')+
+      '<div class="note">'+(n===1?"1 mensualidad registrada":n+" mensualidades registradas")+
+        (faltan?" · faltan unas "+faltan:"")+'</div>'+
+      (p.mensualidad>0&&sal>0?'<div style="display:flex;gap:10px;margin-top:12px">'+
+        '<div style="flex:1;background:#F7F7F4;border-radius:8px;padding:9px 11px"><div class="note" style="font-size:11px">Mensualidad</div><div style="font-weight:600;font-size:14px">'+money(p.mensualidad)+'</div></div>'+
+        '<div style="flex:1;background:#F7F7F4;border-radius:8px;padding:9px 11px"><div class="note" style="font-size:11px">Proximo pago</div><div style="font-weight:600;font-size:14px;color:'+urg+'">'+fmtDate(dp)+'</div><div class="note" style="font-size:11px;color:'+urg+'">'+(np===0?"es hoy":"en "+plural(np))+'</div></div>'+
+      '</div>':'')+
+      '<div style="display:flex;gap:8px;align-items:end;margin-top:12px"><div style="flex:1"><label class="f">Saldo al registrarlo</label><input type="number" inputmode="decimal" value="'+(p.saldoIni||0)+'" onchange="setSaldoIniPre('+p.id+',this.value)"></div><button class="dg" onclick="delPre('+p.id+')">Eliminar</button></div>'+
+    '</div>';
+  }).join("");
+  box.innerHTML=h;
+}
+function renderPreResumen(){
+  var box=document.getElementById("preResumen");
+  if(!D.prestamos.length){box.classList.add("hide");return}
+  box.classList.remove("hide");
+  var prox=D.prestamos.filter(function(p){return saldoPre(p)>0})
+    .map(function(p){return{p:p,d:nextDom(p.dia)}}).sort(function(a,b){return a.d-b.d})[0];
+  var h='<h2>Creditos</h2><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="note">Deuda total</span><span class="mono" style="font-size:18px;font-weight:600;color:#993C1D">'+money(deudaPre())+'</span></div>';
+  if(prox){
+    var np=daysTo(prox.d),urg=np<=3?"#C0392B":np<=7?"#BA7517":"#8a8a85";
+    h+='<div class="note" style="margin-top:8px">Proximo pago: <b style="color:'+urg+'">'+esc(prox.p.nombre)+'</b> el '+fmtDate(prox.d)+' ('+(np===0?"hoy":"en "+plural(np))+')</div>';
+  }
+  box.innerHTML=h;
+}
+
 /* ---------- Charts ---------- */
 function renderDonut(){
   var data=CG.map(function(c){return{n:c,v:gastoCat(c)}}).filter(function(x){return x.v>0}).sort(function(a,b){return b.v-a.v});
@@ -612,11 +740,13 @@ function diasSinRespaldo(){
 function marcarRespaldo(){D.ultimoRespaldo=new Date().toISOString();avisoOff=false;save();renderAll()}
 function cerrarAviso(){avisoOff=true;renderAviso()}
 function renderAviso(){
-  var box=document.getElementById("avisoResp"),nav=document.querySelector('nav div[data-v="sync"]');
-  var hayDatos=D.movimientos.length>0||D.tarjetas.length>0||D.metas.length>0;
+  var box=document.getElementById("avisoResp"),nav=document.getElementById("btnSync");
+  var hayDatos=D.movimientos.length>0||D.tarjetas.length>0||D.metas.length>0||D.prestamos.length>0;
   var dias=diasSinRespaldo();
   var alerta=hayDatos&&(dias===null||dias>=7);
-  if(nav)nav.innerHTML='<i>⇅</i>Respaldo'+(alerta?'<span class="dot"></span>':'');
+  if(nav){nav.innerHTML='⇅ Respaldo'+(alerta?'<span class="dot"></span>':'');
+          nav.style.borderColor=alerta?"#F09595":"#E3E3DE";
+          nav.style.color=alerta?"#A32D2D":"#8a8a85";}
   if(!alerta||avisoOff){box.classList.add("hide");return}
   box.classList.remove("hide");
   var nunca=dias===null;
@@ -630,16 +760,16 @@ function renderAviso(){
     '<button class="x" onclick="cerrarAviso()" aria-label="Cerrar">×</button></div>';
 }
 function renderSync(){
-  var n=D.movimientos.length,g=D.metas.length,t=D.tarjetas.length;
+  var n=D.movimientos.length,g=D.metas.length,t=D.tarjetas.length+D.prestamos.length;
   var first=n?D.movimientos.map(function(m){return m.fecha}).sort()[0]:null;
-  document.getElementById("statLine").textContent=n+" movimientos · "+t+" tarjetas · "+g+" metas"+(first?" · desde "+first:"");
+  document.getElementById("statLine").textContent=n+" movimientos · "+t+" deudas · "+g+" metas"+(first?" · desde "+first:"");
   var dias=diasSinRespaldo(),el=document.getElementById("respLine");
   el.textContent=D.ultimoRespaldo
     ?"Ultimo respaldo: "+new Date(D.ultimoRespaldo).toLocaleDateString("es-MX",{day:"numeric",month:"long"})+(dias===0?" (hoy)":dias===1?" (ayer)":" (hace "+dias+" dias)")
     :"Aun no has hecho ningun respaldo.";
   el.style.color=(!D.ultimoRespaldo||dias>=7)?"#A32D2D":"#0F6E56";
 }
-function renderAll(){if(!P)return;renderDash();renderMovs();renderPres();renderTar();renderTarResumen();renderMetas();renderSync();renderAviso()}
+function renderAll(){if(!P)return;renderDash();renderMovs();renderPres();renderTar();renderTarResumen();renderPre();renderPreResumen();renderMetas();renderSync();renderAviso()}
 
 /* ---------- Respaldo ---------- */
 function payload(){return JSON.stringify({app:"finanzas",v:2,perfil:P.nombre,exportado:new Date().toISOString(),data:D},null,2)}
@@ -656,10 +786,12 @@ function applyImport(txt){
   var d=o&&o.data?o.data:o;
   if(!d||!Array.isArray(d.movimientos))throw new Error("formato");
   var b=blankData();
-  D=migra({movimientos:d.movimientos,presupuestos:d.presupuestos,metas:d.metas,tarjetas:d.tarjetas,
+  D=migra({movimientos:d.movimientos,presupuestos:d.presupuestos,metas:d.metas,tarjetas:d.tarjetas,prestamos:d.prestamos,
+     ultimoRespaldo:d.ultimoRespaldo,
      nextM:Math.max(1,...d.movimientos.map(function(m){return (m.id||0)+1})),
      nextG:Math.max(1,...(d.metas||[]).map(function(m){return (m.id||0)+1})),
-     nextT:Math.max(1,...(d.tarjetas||[]).map(function(t){return (t.id||0)+1}))});
+     nextT:Math.max(1,...(d.tarjetas||[]).map(function(t){return (t.id||0)+1})),
+     nextP:Math.max(1,...(d.prestamos||[]).map(function(p){return (p.id||0)+1}))});
   save();fillCats();renderAll();
 }
 function importFile(e){
