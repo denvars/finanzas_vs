@@ -446,6 +446,32 @@ function nextDom(dom){
   return c;
 }
 function daysTo(d){var t=new Date();t.setHours(0,0,0,0);return Math.round((d.getTime()-t.getTime())/864e5)}
+/* El pago pertenece al corte que lo origina: es la primera ocurrencia
+   del dia de pago DESPUES de esa fecha de corte, no una fecha suelta. */
+function cicloTar(t){
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  function pagoDe(c){
+    var p=mkDate(c.getFullYear(),c.getMonth(),t.pago);
+    if(p.getTime()<=c.getTime())p=mkDate(c.getFullYear(),c.getMonth()+1,t.pago);
+    return p;
+  }
+  var corte=mkDate(hoy.getFullYear(),hoy.getMonth(),t.corte);
+  if(corte.getTime()>hoy.getTime())corte=mkDate(hoy.getFullYear(),hoy.getMonth()-1,t.corte);
+  var pago=pagoDe(corte);
+  if(pago.getTime()<hoy.getTime()){
+    corte=mkDate(corte.getFullYear(),corte.getMonth()+1,t.corte);
+    pago=pagoDe(corte);
+  }
+  var prox=mkDate(hoy.getFullYear(),hoy.getMonth(),t.corte);
+  if(prox.getTime()<hoy.getTime())prox=mkDate(hoy.getFullYear(),hoy.getMonth()+1,t.corte);
+  return {corte:corte,pago:pago,proxCorte:prox};
+}
+/* fecha de pago que le tocara a un corte dado */
+function cicloSig(t,corte){
+  var p=mkDate(corte.getFullYear(),corte.getMonth(),t.pago);
+  if(p.getTime()<=corte.getTime())p=mkDate(corte.getFullYear(),corte.getMonth()+1,t.pago);
+  return p;
+}
 function fmtDate(d){
   var M=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
   return d.getDate()+" "+M[d.getMonth()];
@@ -482,7 +508,7 @@ function usoMes(id){
 }
 function proxPago(){
   if(!D.tarjetas.length)return null;
-  return D.tarjetas.map(function(t){return{t:t,d:nextDom(t.pago)}}).sort(function(a,b){return a.d-b.d})[0];
+  return D.tarjetas.map(function(t){return{t:t,d:cicloTar(t).pago}}).sort(function(a,b){return a.d-b.d})[0];
 }
 function renderTar(){
   var box=document.getElementById("tarList");
@@ -501,8 +527,8 @@ function renderTar(){
     }).join("")+'</div>';
   }
 
-  h+=D.tarjetas.slice().sort(function(a,b){return nextDom(a.pago)-nextDom(b.pago)}).map(function(t){
-    var dc=nextDom(t.corte),dp=nextDom(t.pago),nc=daysTo(dc),np=daysTo(dp);
+  h+=D.tarjetas.slice().sort(function(a,b){return cicloTar(a).pago-cicloTar(b).pago}).map(function(t){
+    var ci=cicloTar(t),dc=ci.proxCorte,dp=ci.pago,nc=daysTo(dc),np=daysTo(dp);
     var urg=np<=3?"#C0392B":np<=7?"#BA7517":"#8a8a85";
     var sal=saldoTar(t),car=cargosTar(t.id),pag=pagosTar(t.id),u=usoMes(t.id);
     var uso=t.limite>0?Math.round(sal/t.limite*100):null;
@@ -514,8 +540,8 @@ function renderTar(){
       '<div class="note" style="margin-top:9px">Saldo inicial '+money(t.saldoIni||0)+' + cargos '+money(car)+' − pagos '+money(pag)+'</div>'+
       '<div class="note">Este mes: '+money(u.monto)+' en '+(u.n===1?"1 compra":u.n+" compras")+'</div>'+
       '<div style="display:flex;gap:10px;margin-top:12px">'+
-        '<div style="flex:1;background:#F7F7F4;border-radius:8px;padding:9px 11px"><div class="note" style="font-size:11px">Corte</div><div style="font-weight:600;font-size:14px">'+fmtDate(dc)+'</div><div class="note" style="font-size:11px">en '+plural(nc)+'</div></div>'+
-        '<div style="flex:1;background:#F7F7F4;border-radius:8px;padding:9px 11px"><div class="note" style="font-size:11px">Limite de pago</div><div style="font-weight:600;font-size:14px;color:'+urg+'">'+fmtDate(dp)+'</div><div class="note" style="font-size:11px;color:'+urg+'">'+(np===0?"es hoy":"en "+plural(np))+'</div></div>'+
+        '<div style="flex:1;background:#F7F7F4;border-radius:8px;padding:9px 11px"><div class="note" style="font-size:11px">Limite de pago</div><div style="font-weight:600;font-size:14px;color:'+urg+'">'+fmtDate(dp)+'</div><div class="note" style="font-size:11px;color:'+urg+'">'+(np===0?"es hoy":"en "+plural(np))+'</div><div class="note" style="font-size:10px;margin-top:2px">del corte '+fmtDate(ci.corte)+'</div></div>'+
+        '<div style="flex:1;background:#F7F7F4;border-radius:8px;padding:9px 11px"><div class="note" style="font-size:11px">Proximo corte</div><div style="font-weight:600;font-size:14px">'+fmtDate(dc)+'</div><div class="note" style="font-size:11px">en '+plural(nc)+'</div><div class="note" style="font-size:10px;margin-top:2px">se paga el '+fmtDate(cicloSig(t,dc))+'</div></div>'+
       '</div>'+
       '<div style="display:flex;gap:8px;align-items:end;margin-top:12px"><div style="flex:1"><label class="f">Saldo inicial</label><input type="number" inputmode="decimal" value="'+(t.saldoIni||0)+'" onchange="setSaldoIni('+t.id+',this.value)"></div><button class="dg" onclick="delTar('+t.id+')">Eliminar</button></div>'+
     '</div>';
