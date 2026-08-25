@@ -90,6 +90,7 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
 .chip.pay{background:#E6F1FB;color:#0C447C;font-weight:600}
 .chip.cash{background:#EAF3DE;color:#3B6D11}
 .chip.cred{background:#EEEDFE;color:#3C3489;font-weight:600}
+.chip.aho{background:#E1F5EE;color:#085041;font-weight:600}
 .note{font-size:12px;color:#8a8a85;line-height:1.6}
 .aviso{border-radius:12px;padding:13px 15px;margin:12px 0 0;display:flex;gap:11px;align-items:flex-start}
 .aviso.warn{background:#FAEEDA;border:1px solid #EF9F27}
@@ -164,6 +165,8 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
         <div class="kpi"><div class="l">Balance</div><div class="v mono" id="kBal">$0</div></div>
         <div class="kpi"><div class="l">Presupuesto usado</div><div class="v mono" id="kPct">0%</div></div>
       </div>
+      <div class="card hide" id="penResumen"></div>
+      <div class="card hide" id="ahoResumen"></div>
       <div class="card hide" id="preResumen"></div>
       <div class="card hide" id="tarResumen"></div>
       <div class="card hide" id="pagosBox"></div>
@@ -176,7 +179,7 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
         <h2>Nuevo movimiento</h2>
         <div class="fr">
           <div><label class="f">Fecha</label><input type="date" id="mFecha"></div>
-          <div><label class="f">Tipo</label><select id="mTipo" onchange="fillCats()"><option>Gasto</option><option>Ingreso</option><option>Pago de tarjeta</option></select></div>
+          <div><label class="f">Tipo</label><select id="mTipo" onchange="fillCats()"><option>Gasto</option><option>Ingreso</option><option>Pago de tarjeta</option><option>Aporte a ahorro</option></select></div>
           <div id="wCat"><label class="f">Categoria</label><select id="mCat" onchange="togglePre()"></select></div>
         </div>
         <div class="fr">
@@ -185,6 +188,7 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
           <div><label class="f">Monto</label><input type="number" id="mMonto" inputmode="decimal" step="0.01" placeholder="0.00"></div>
         </div>
         <div id="wPre" class="fr one hide"><div><label class="f">¿A que credito corresponde?</label><select id="mPre"></select></div></div>
+        <div id="wCta" class="fr one hide"><div><label class="f">¿A que cuenta lo aportas?</label><select id="mCta"></select></div></div>
         <div id="mErr" class="err hide">Revisa la fecha, elige una categoria y escribe un monto mayor a cero.</div>
         <div id="mErrTar" class="err hide">Elige con que pagaste este movimiento.</div>
         <button class="full" style="margin-top:4px" onclick="addMov()">Agregar</button>
@@ -204,6 +208,7 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
       <div class="seg">
         <button id="segT" class="on" onclick="segDeu('tar')">Tarjetas</button>
         <button id="segP" onclick="segDeu('pre')">Creditos</button>
+        <button id="segD" onclick="segDeu('pen')">Pendientes</button>
       </div>
 
       <div id="sub-tar">
@@ -241,10 +246,48 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
       </div>
       <div id="preList"></div>
       </div>
+
+      <div id="sub-pen" class="hide">
+      <div class="card">
+        <h2>Nuevo pago pendiente</h2>
+        <p class="note">Compromisos con fecha y monto fijo: colegiaturas, tenencia, seguro anual, predial.</p>
+        <div class="fr" style="margin-top:12px">
+          <div><label class="f">Concepto</label><input type="text" id="dNom" placeholder="Maestria 3er trimestre"></div>
+          <div><label class="f">Monto</label><input type="number" id="dMonto" inputmode="decimal" placeholder="28000"></div>
+        </div>
+        <div class="fr">
+          <div><label class="f">Fecha limite</label><input type="date" id="dFec"></div>
+          <div><label class="f">Categoria</label><select id="dCat"></select></div>
+        </div>
+        <div id="dErr" class="err hide">Escribe concepto, monto mayor a cero, fecha y categoria.</div>
+        <button class="full" onclick="addPen()">Agregar pendiente</button>
+      </div>
+      <div id="penList"></div>
+      </div>
     </section>
 
-    <section id="v-metas" class="hide">
-      <div class="card" style="margin-top:12px">
+    <section id="v-aho" class="hide">
+      <div class="seg">
+        <button id="segC" class="on" onclick="segAho('cta')">Cuentas</button>
+        <button id="segM" onclick="segAho('met')">Metas</button>
+      </div>
+
+      <div id="sub-cta">
+      <div class="card">
+        <h2>Nueva cuenta</h2>
+        <p class="note">Donde tienes guardado tu dinero: GBM, Nu, apartados de BBVA, Mercado Pago, efectivo.</p>
+        <div class="fr" style="margin-top:12px">
+          <div><label class="f">Nombre</label><input type="text" id="cNom" placeholder="GBM"></div>
+          <div><label class="f">Saldo actual</label><input type="number" id="cSaldo" inputmode="decimal" placeholder="25000"></div>
+        </div>
+        <div id="cErr" class="err hide">Escribe un nombre y un saldo valido.</div>
+        <button class="full" onclick="addCta()">Agregar cuenta</button>
+      </div>
+      <div id="ctaList"></div>
+      </div>
+
+      <div id="sub-met" class="hide">
+      <div class="card">
         <h2>Nueva meta de ahorro</h2>
         <div class="fr">
           <div><label class="f">Nombre</label><input type="text" id="gNom" placeholder="Fondo de emergencia"></div>
@@ -255,6 +298,7 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
         <button class="full" onclick="addMeta()">Agregar meta</button>
       </div>
       <div id="metaList"></div>
+      </div>
     </section>
 
     <section id="v-sync" class="hide">
@@ -293,7 +337,7 @@ td{padding:9px 4px;border-bottom:1px solid #F0F0EC;vertical-align:middle}
     <div data-v="mov" onclick="go('mov')"><i>≡</i>Movs</div>
     <div data-v="pres" onclick="go('pres')"><i>◑</i>Presupuesto</div>
     <div data-v="deu" onclick="go('deu')"><i>▭</i>Deudas</div>
-    <div data-v="metas" onclick="go('metas')"><i>◎</i>Metas</div>
+    <div data-v="aho" onclick="go('aho')"><i>◎</i>Ahorro</div>
   </nav>
 </div>
 
@@ -312,16 +356,22 @@ async function sha(t){var b=await crypto.subtle.digest("SHA-256",new TextEncoder
 
 function getProfiles(){try{return JSON.parse(localStorage.getItem(PKEY))||[]}catch(e){return[]}}
 function setProfiles(a){localStorage.setItem(PKEY,JSON.stringify(a))}
-function blankData(){var b={};CG.forEach(function(c){b[c]=0});return{movimientos:[],presupuestos:b,metas:[],tarjetas:[],prestamos:[],nextM:1,nextG:1,nextT:1,nextP:1,ultimoRespaldo:null}}
+function blankData(){var b={};CG.forEach(function(c){b[c]=0});return{movimientos:[],presupuestos:b,metas:[],tarjetas:[],prestamos:[],cuentas:[],pendientes:[],nextM:1,nextG:1,nextT:1,nextP:1,nextC:1,nextD:1,ultimoRespaldo:null}}
 function dataKey(id){return "fin_data_"+id}
 function migra(d){
   var b=blankData();
-  d.movimientos=(d.movimientos||[]).map(function(m){if(m.tar===undefined)m.tar=null;if(m.pre===undefined)m.pre=null;return m});
+  d.movimientos=(d.movimientos||[]).map(function(m){if(m.tar===undefined)m.tar=null;if(m.pre===undefined)m.pre=null;if(m.cta===undefined)m.cta=null;return m});
   d.prestamos=d.prestamos||[];
+  d.cuentas=(d.cuentas||[]).map(function(c){if(c.saldoIni===undefined)c.saldoIni=c.saldo||0;return c});
+  d.pendientes=(d.pendientes||[]).map(function(p){if(p.movId===undefined)p.movId=null;return p});
+  /* si el gasto ligado ya no existe, el pendiente vuelve a estar abierto */
+  d.pendientes.forEach(function(p){
+    if(p.movId&&!d.movimientos.some(function(m){return m.id===p.movId}))p.movId=null;
+  });
   d.metas=d.metas||[];
   d.tarjetas=(d.tarjetas||[]).map(function(t){if(t.saldoIni===undefined)t.saldoIni=t.saldo||0;delete t.saldo;return t});
   d.presupuestos=Object.assign(b.presupuestos,d.presupuestos||{});
-  d.nextM=d.nextM||1;d.nextG=d.nextG||1;d.nextT=d.nextT||1;d.nextP=d.nextP||1;
+  d.nextM=d.nextM||1;d.nextG=d.nextG||1;d.nextT=d.nextT||1;d.nextP=d.nextP||1;d.nextC=d.nextC||1;d.nextD=d.nextD||1;
   if(d.ultimoRespaldo===undefined)d.ultimoRespaldo=null;
   return d;
 }
@@ -375,30 +425,46 @@ function enter(p){
   document.getElementById("fsaBox").classList.toggle("hide",!window.showSaveFilePicker);
   document.getElementById("linkState").textContent="";
   document.getElementById("syncMsg").textContent="";
-  fillCats();segDeu("tar");go("dash");
+  document.getElementById("dCat").innerHTML='<option value="">Elige una categoria</option>'+
+    CG.map(function(c){return'<option>'+esc(c)+'</option>'}).join("");
+  fillCats();segDeu("tar");segAho("cta");go("dash");
 }
 function logout(){P=null;D=null;fileHandle=null;document.getElementById("app").classList.add("hide");document.getElementById("login").classList.remove("hide");renderLogin()}
 function go(v){
-  ["dash","mov","pres","deu","metas","sync"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("hide",x!==v)});
+  ["dash","mov","pres","deu","aho","sync"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("hide",x!==v)});
   document.querySelectorAll("nav div").forEach(function(d){d.classList.toggle("on",d.dataset.v===v)});
   window.scrollTo(0,0);renderAll();
 }
+function segAho(cual){
+  document.getElementById("sub-cta").classList.toggle("hide",cual!=="cta");
+  document.getElementById("sub-met").classList.toggle("hide",cual!=="met");
+  document.getElementById("segC").classList.toggle("on",cual==="cta");
+  document.getElementById("segM").classList.toggle("on",cual==="met");
+}
 function segDeu(cual){
-  document.getElementById("sub-tar").classList.toggle("hide",cual!=="tar");
-  document.getElementById("sub-pre").classList.toggle("hide",cual!=="pre");
+  ["tar","pre","pen"].forEach(function(x){document.getElementById("sub-"+x).classList.toggle("hide",x!==cual)});
   document.getElementById("segT").classList.toggle("on",cual==="tar");
   document.getElementById("segP").classList.toggle("on",cual==="pre");
+  document.getElementById("segD").classList.toggle("on",cual==="pen");
 }
 
 /* ---------- Movimientos ---------- */
 function fillCats(){
   var t=document.getElementById("mTipo").value,s=document.getElementById("mCat");
-  var pago=t==="Pago de tarjeta";
+  var pago=t==="Pago de tarjeta",aporte=t==="Aporte a ahorro";
   s.innerHTML='<option value="">Elige una categoria</option>'+(t==="Ingreso"?CI:CG).map(function(c){return'<option>'+esc(c)+'</option>'}).join("");
   s.value="";
-  document.getElementById("wCat").classList.toggle("hide",pago);
+  document.getElementById("wCat").classList.toggle("hide",pago||aporte);
+  var wc=document.getElementById("wCta"),nc=D&&D.cuentas?D.cuentas.length:0;
+  wc.classList.toggle("hide",!aporte);
+  if(aporte){
+    var sc=document.getElementById("mCta");
+    sc.innerHTML='<option value="">'+(nc?"Elige la cuenta":"Primero registra una cuenta en Ahorro")+'</option>'+
+      (nc?D.cuentas.map(function(c){return'<option value="'+c.id+'">'+esc(c.nombre)+'</option>'}).join(""):"");
+    sc.value="";sc.disabled=!nc;
+  }
   var wt=document.getElementById("wTar");
-  wt.classList.toggle("hide",t==="Ingreso");
+  wt.classList.toggle("hide",t==="Ingreso"||aporte);
   wt.querySelector("label").textContent=pago?"Tarjeta a pagar":"Pagado con";
   var sel=document.getElementById("mTar");
   var n=D&&D.tarjetas?D.tarjetas.length:0;
@@ -427,22 +493,30 @@ function addMov(){
   var f=document.getElementById("mFecha").value,t=document.getElementById("mTipo").value,
       de=document.getElementById("mDesc").value.trim(),
       m=parseFloat(document.getElementById("mMonto").value);
-  var pago=t==="Pago de tarjeta";
+  var pago=t==="Pago de tarjeta",aporte=t==="Aporte a ahorro";
   var ingreso=t==="Ingreso";
-  var c=pago?"Pago de tarjeta":document.getElementById("mCat").value;
-  var tarRaw=ingreso?"cash":document.getElementById("mTar").value;
+  var c=pago?"Pago de tarjeta":aporte?"Aporte a ahorro":document.getElementById("mCat").value;
+  var tarRaw=(ingreso||aporte)?"cash":document.getElementById("mTar").value;
   var tar=(tarRaw&&tarRaw!=="cash")?parseInt(tarRaw,10):null;
+  var ctaRaw=aporte?document.getElementById("mCta").value:"";
   var eC=document.getElementById("mErr"),eT=document.getElementById("mErrTar");
   eC.classList.add("hide");eT.classList.add("hide");
   if(!f||!c||isNaN(m)||m<=0){eC.classList.remove("hide");return}
   if(!tarRaw){eT.textContent=pago?"Elige a que tarjeta corresponde el pago.":"Elige con que pagaste este movimiento.";
               eT.classList.remove("hide");return}
+  if(aporte&&!ctaRaw){eT.textContent="Elige a que cuenta va el aporte.";eT.classList.remove("hide");return}
   var preRaw=(t==="Gasto"&&c==="Deudas")?document.getElementById("mPre").value:"";
-  D.movimientos.push({id:D.nextM++,fecha:f,tipo:t,cat:c,desc:de,monto:m,tar:tar,pre:preRaw?parseInt(preRaw,10):null});
+  D.movimientos.push({id:D.nextM++,fecha:f,tipo:t,cat:c,desc:de,monto:m,tar:tar,
+    pre:preRaw?parseInt(preRaw,10):null,cta:ctaRaw?parseInt(ctaRaw,10):null});
   save();document.getElementById("mDesc").value="";document.getElementById("mMonto").value="";
   document.getElementById("mes").value=f.slice(0,7);renderAll();
 }
-function delMov(id){D.movimientos=D.movimientos.filter(function(m){return m.id!==id});save();renderAll()}
+function delMov(id){
+  D.movimientos=D.movimientos.filter(function(m){return m.id!==id});
+  /* si borras el gasto de un pendiente, vuelve a quedar abierto */
+  D.pendientes.forEach(function(p){if(p.movId===id)p.movId=null});
+  save();renderAll();
+}
 function mesSel(){return document.getElementById("mes").value||monthISO()}
 function movsMes(){var m=mesSel();return D.movimientos.filter(function(x){return x.fecha.slice(0,7)===m})}
 function renderMovs(){
@@ -461,6 +535,10 @@ function renderMovs(){
     if(m.pre){
       var pn=(D.prestamos.filter(function(p){return p.id===m.pre})[0]||{}).nombre;
       if(pn)pill+=' <span class="chip cred">'+esc(pn)+'</span>';
+    }
+    if(m.cta){
+      var cn=(D.cuentas.filter(function(c){return c.id===m.cta})[0]||{}).nombre;
+      if(cn)pill=' <span class="chip aho">'+esc(cn)+'</span>';
     }
     return '<div class="prow"><div class="top"><b>'+esc(m.desc||m.cat)+'</b><span class="mono '+cls+'"'+(pago?' style="color:#5F5E5A"':'')+'>'+sig+money(m.monto)+'</span></div>'+
       '<div class="mt"><span class="chip">'+esc(m.cat)+'</span>'+pill+' · '+esc(m.fecha)+
@@ -690,6 +768,169 @@ function renderPreResumen(){
   box.innerHTML=h;
 }
 
+/* ---------- Pagos pendientes ---------- */
+function addPen(){
+  var n=document.getElementById("dNom").value.trim(),
+      m=parseFloat(document.getElementById("dMonto").value),
+      f=document.getElementById("dFec").value,
+      c=document.getElementById("dCat").value;
+  if(!n||isNaN(m)||m<=0||!f||!c){document.getElementById("dErr").classList.remove("hide");return}
+  document.getElementById("dErr").classList.add("hide");
+  D.pendientes.push({id:D.nextD++,concepto:n,monto:m,fecha:f,cat:c,movId:null});
+  save();
+  ["dNom","dMonto","dFec"].forEach(function(x){document.getElementById(x).value=""});
+  document.getElementById("dCat").value="";
+  renderAll();
+}
+function delPen(id){
+  var p=D.pendientes.filter(function(x){return x.id===id})[0];
+  if(p&&p.movId)D.movimientos=D.movimientos.filter(function(m){return m.id!==p.movId});
+  D.pendientes=D.pendientes.filter(function(x){return x.id!==id});
+  save();renderAll();
+}
+function pagarPen(id){
+  var p=D.pendientes.filter(function(x){return x.id===id})[0];
+  if(!p||p.movId)return;
+  var forma=document.getElementById("pf"+id);
+  var raw=forma?forma.value:"cash";
+  var mid=D.nextM++;
+  D.movimientos.push({id:mid,fecha:todayISO(),tipo:"Gasto",cat:p.cat,desc:p.concepto,monto:p.monto,
+    tar:(raw&&raw!=="cash")?parseInt(raw,10):null,pre:null,cta:null});
+  p.movId=mid;
+  save();document.getElementById("mes").value=todayISO().slice(0,7);renderAll();
+}
+function desmarcarPen(id){
+  var p=D.pendientes.filter(function(x){return x.id===id})[0];
+  if(!p||!p.movId)return;
+  D.movimientos=D.movimientos.filter(function(m){return m.id!==p.movId});
+  p.movId=null;save();renderAll();
+}
+function estadoPen(p){
+  if(p.movId)return "pagado";
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  var f=new Date(p.fecha+"T00:00:00");
+  return f.getTime()<hoy.getTime()?"vencido":"pendiente";
+}
+function diasPen(p){
+  var hoy=new Date();hoy.setHours(0,0,0,0);
+  return Math.round((new Date(p.fecha+"T00:00:00").getTime()-hoy.getTime())/864e5);
+}
+function totalPen(){return D.pendientes.filter(function(p){return !p.movId}).reduce(function(s,p){return s+p.monto},0)}
+function vencidos(){return D.pendientes.filter(function(p){return estadoPen(p)==="vencido"})}
+function renderPen(){
+  var box=document.getElementById("penList");
+  if(!D.pendientes.length){box.innerHTML='<div class="card"><div class="empty">Sin pagos pendientes.</div></div>';return}
+  var pend=totalPen(),ven=vencidos();
+  var h='<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="note">Total por pagar</span><span class="mono" style="font-size:20px;font-weight:600;color:'+(pend>0?"#993C1D":"#0F6E56")+'">'+money(pend)+'</span></div>'+
+    (ven.length?'<div class="note" style="color:#A32D2D;font-weight:600;margin-top:6px">'+(ven.length===1?"1 pago vencido":ven.length+" pagos vencidos")+'</div>':'')+'</div>';
+  var orden={vencido:0,pendiente:1,pagado:2};
+  h+=D.pendientes.slice().sort(function(a,b){
+      var ea=estadoPen(a),eb=estadoPen(b);
+      return orden[ea]-orden[eb]||a.fecha.localeCompare(b.fecha);
+    }).map(function(p){
+    var e=estadoPen(p),dd=diasPen(p);
+    var col=e==="vencido"?"#A32D2D":e==="pagado"?"#0F6E56":dd<=7?"#BA7517":"#8a8a85";
+    var etq=e==="pagado"?"Pagado":e==="vencido"?(dd===-1?"vencio ayer":"vencio hace "+Math.abs(dd)+" dias")
+            :dd===0?"vence hoy":"en "+plural(dd);
+    var opts='<option value="cash">Efectivo o debito</option>'+
+      D.tarjetas.map(function(t){return'<option value="'+t.id+'">'+esc(t.nombre)+'</option>'}).join("");
+    return '<div class="card"'+(e==="vencido"?' style="border-color:#F09595"':'')+'>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">'+
+      '<b'+(e==="pagado"?' style="text-decoration:line-through;color:#8a8a85"':'')+'>'+esc(p.concepto)+'</b>'+
+      '<span class="mono" style="font-size:17px;font-weight:600;color:'+(e==="pagado"?"#8a8a85":"#993C1D")+'">'+money(p.monto)+'</span></div>'+
+      '<div class="note" style="margin-top:5px"><span class="chip">'+esc(p.cat)+'</span> · '+esc(p.fecha)+
+        ' · <b style="color:'+col+'">'+etq+'</b></div>'+
+      (e==="pagado"
+        ? '<div style="display:flex;gap:8px;margin-top:11px"><button class="gh" onclick="desmarcarPen('+p.id+')">Deshacer</button><button class="dg" onclick="delPen('+p.id+')">Eliminar</button></div>'
+        : '<div style="display:flex;gap:8px;align-items:end;margin-top:11px">'+
+          '<div style="flex:1"><label class="f">Pagar con</label><select id="pf'+p.id+'">'+opts+'</select></div>'+
+          '<button onclick="pagarPen('+p.id+')">Marcar pagado</button>'+
+          '<button class="dg" onclick="delPen('+p.id+')">Eliminar</button></div>')+
+    '</div>';
+  }).join("");
+  box.innerHTML=h;
+}
+function renderPenResumen(){
+  var box=document.getElementById("penResumen");
+  var abiertos=D.pendientes.filter(function(p){return !p.movId});
+  if(!abiertos.length){box.classList.add("hide");return}
+  box.classList.remove("hide");
+  var ven=vencidos();
+  var prox=abiertos.slice().sort(function(a,b){return a.fecha.localeCompare(b.fecha)})[0];
+  var dd=diasPen(prox),col=dd<0?"#A32D2D":dd<=7?"#BA7517":"#8a8a85";
+  box.innerHTML='<h2>Pagos pendientes</h2><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="note">Total por pagar</span><span class="mono" style="font-size:18px;font-weight:600;color:#993C1D">'+money(totalPen())+'</span></div>'+
+    (ven.length?'<div class="note" style="color:#A32D2D;font-weight:600;margin-top:8px">'+(ven.length===1?"1 pago vencido":ven.length+" pagos vencidos")+'</div>':'')+
+    '<div class="note" style="margin-top:'+(ven.length?"4px":"8px")+'">Sigue: <b style="color:'+col+'">'+esc(prox.concepto)+'</b> · '+money(prox.monto)+' · '+
+      (dd<0?"vencido":dd===0?"hoy":"en "+plural(dd))+'</div>';
+}
+
+/* ---------- Cuentas de ahorro ---------- */
+function addCta(){
+  var n=document.getElementById("cNom").value.trim(),
+      s=parseFloat(document.getElementById("cSaldo").value);
+  if(!n||isNaN(s)||s<0){document.getElementById("cErr").classList.remove("hide");return}
+  document.getElementById("cErr").classList.add("hide");
+  D.cuentas.push({id:D.nextC++,nombre:n,saldoIni:s,saldo:s,desde:todayISO()});
+  save();
+  ["cNom","cSaldo"].forEach(function(x){document.getElementById(x).value=""});
+  fillCats();renderAll();
+}
+function setSaldoCta(id,v){
+  var c=D.cuentas.filter(function(x){return x.id===id})[0];
+  if(c){c.saldo=Math.max(0,parseFloat(v)||0);save();renderAll()}
+}
+function delCta(id){
+  D.cuentas=D.cuentas.filter(function(c){return c.id!==id});
+  D.movimientos=D.movimientos.filter(function(m){return !(m.tipo==="Aporte a ahorro"&&m.cta===id)});
+  save();fillCats();renderAll();
+}
+function aportesCta(id,mes){
+  return D.movimientos.filter(function(m){
+    return m.tipo==="Aporte a ahorro"&&m.cta===id&&(!mes||m.fecha.slice(0,7)===mes);
+  });
+}
+function aportadoCta(id,mes){return aportesCta(id,mes).reduce(function(s,m){return s+m.monto},0)}
+/* Lo que crecio por si solo: saldo de hoy menos con lo que empezaste
+   menos todo lo que le metiste de tu bolsillo. */
+function rendCta(c){return (c.saldo||0)-(c.saldoIni||0)-aportadoCta(c.id)}
+function totalAhorro(){return D.cuentas.reduce(function(s,c){return s+(c.saldo||0)},0)}
+function aportadoMes(){return D.cuentas.reduce(function(s,c){return s+aportadoCta(c.id,mesSel())},0)}
+function renderCta(){
+  var box=document.getElementById("ctaList");
+  if(!D.cuentas.length){box.innerHTML='<div class="card"><div class="empty">Sin cuentas registradas.</div></div>';return}
+  var tot=totalAhorro();
+  var h='<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="note">Total ahorrado</span><span class="mono" style="font-size:20px;font-weight:600;color:#0F6E56">'+money(tot)+'</span></div>'+
+    (tot>0?'<div style="display:flex;height:8px;border-radius:5px;overflow:hidden;margin-top:10px">'+
+      D.cuentas.filter(function(c){return c.saldo>0}).map(function(c,i){
+        return '<div style="width:'+(c.saldo/tot*100)+'%;background:'+COL[i%COL.length]+'"></div>';
+      }).join("")+'</div>':'')+
+    '</div>';
+  h+=D.cuentas.slice().sort(function(a,b){return (b.saldo||0)-(a.saldo||0)}).map(function(c,i){
+    var ap=aportadoCta(c.id),apMes=aportadoCta(c.id,mesSel()),r=rendCta(c);
+    var pctTot=tot>0?Math.round(c.saldo/tot*100):0;
+    return '<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+      '<b><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+COL[i%COL.length]+';margin-right:7px"></span>'+esc(c.nombre)+'</b>'+
+      '<span class="mono" style="font-size:18px;font-weight:600;color:#0F6E56">'+money(c.saldo)+'</span></div>'+
+      '<div class="note" style="margin-top:6px">'+pctTot+'% de tu ahorro · empezaste con '+money(c.saldoIni)+'</div>'+
+      '<div style="display:flex;gap:10px;margin-top:12px">'+
+        '<div style="flex:1;background:#F7F7F4;border-radius:8px;padding:9px 11px"><div class="note" style="font-size:11px">Has aportado</div><div style="font-weight:600;font-size:14px">'+money(ap)+'</div><div class="note" style="font-size:11px">'+(apMes>0?money(apMes)+" este mes":"nada este mes")+'</div></div>'+
+        '<div style="flex:1;background:#F7F7F4;border-radius:8px;padding:9px 11px"><div class="note" style="font-size:11px">Rendimiento</div><div style="font-weight:600;font-size:14px;color:'+(r>0?"#0F6E56":r<0?"#993C1D":"#1a1a1a")+'">'+(r>0?"+":"")+money(r)+'</div><div class="note" style="font-size:11px">'+(r>=0?"crecio solo":"perdida")+'</div></div>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;align-items:end;margin-top:12px"><div style="flex:1"><label class="f">Saldo actual</label><input type="number" inputmode="decimal" value="'+(c.saldo||0)+'" onchange="setSaldoCta('+c.id+',this.value)"></div><button class="dg" onclick="delCta('+c.id+')">Eliminar</button></div>'+
+    '</div>';
+  }).join("");
+  box.innerHTML=h;
+}
+function renderAhoResumen(){
+  var box=document.getElementById("ahoResumen");
+  if(!D.cuentas.length){box.classList.add("hide");return}
+  box.classList.remove("hide");
+  var ap=aportadoMes();
+  box.innerHTML='<h2>Ahorro</h2><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="note">Total en tus cuentas</span><span class="mono" style="font-size:18px;font-weight:600;color:#0F6E56">'+money(totalAhorro())+'</span></div>'+
+    '<div class="note" style="margin-top:8px">'+(ap>0?"Aportaste <b>"+money(ap)+"</b> este mes":"Sin aportaciones este mes")+'</div>';
+}
+
 /* ---------- Charts ---------- */
 function renderDonut(){
   var data=CG.map(function(c){return{n:c,v:gastoCat(c)}}).filter(function(x){return x.v>0}).sort(function(a,b){return b.v-a.v});
@@ -725,9 +966,12 @@ function renderDash(){
   document.getElementById("kOut").textContent=money(gas);
   var kb=document.getElementById("kBal");kb.textContent=money(bal);kb.className="v mono "+(bal>=0?"pos":"neg");
   document.getElementById("kPct").textContent=(tb>0?Math.round(gas/tb*100):0)+"%";
-  var pb=document.getElementById("pagosBox");
-  pb.classList.toggle("hide",pagos<=0);
-  if(pagos>0)pb.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="note">Pagos a tarjetas este mes</span><span class="mono" style="font-size:16px;font-weight:600">'+money(pagos)+'</span></div><div class="note" style="margin-top:6px">No cuenta como gasto: la compra ya se conto cuando la hiciste. Esto solo baja tu deuda.</div>';
+  var apo=l.filter(function(m){return m.tipo==="Aporte a ahorro"}).reduce(function(s,m){return s+m.monto},0);
+  var pb=document.getElementById("pagosBox"),partes=[];
+  if(pagos>0)partes.push('<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="note">Pagos a tarjetas</span><span class="mono" style="font-size:16px;font-weight:600">'+money(pagos)+'</span></div>');
+  if(apo>0)partes.push('<div style="display:flex;justify-content:space-between;align-items:baseline'+(pagos>0?';margin-top:8px':'')+'"><span class="note">Aportado a ahorro</span><span class="mono" style="font-size:16px;font-weight:600;color:#0F6E56">'+money(apo)+'</span></div>');
+  pb.classList.toggle("hide",!partes.length);
+  if(partes.length)pb.innerHTML=partes.join("")+'<div class="note" style="margin-top:8px">No cuentan como gasto: no son consumo, es dinero que cambia de lugar.</div>';
   renderDonut();renderBars();
 }
 var avisoOff=false;
@@ -741,7 +985,7 @@ function marcarRespaldo(){D.ultimoRespaldo=new Date().toISOString();avisoOff=fal
 function cerrarAviso(){avisoOff=true;renderAviso()}
 function renderAviso(){
   var box=document.getElementById("avisoResp"),nav=document.getElementById("btnSync");
-  var hayDatos=D.movimientos.length>0||D.tarjetas.length>0||D.metas.length>0||D.prestamos.length>0;
+  var hayDatos=D.movimientos.length>0||D.tarjetas.length>0||D.metas.length>0||D.prestamos.length>0||D.cuentas.length>0||D.pendientes.length>0;
   var dias=diasSinRespaldo();
   var alerta=hayDatos&&(dias===null||dias>=7);
   if(nav){nav.innerHTML='⇅ Respaldo'+(alerta?'<span class="dot"></span>':'');
@@ -769,7 +1013,7 @@ function renderSync(){
     :"Aun no has hecho ningun respaldo.";
   el.style.color=(!D.ultimoRespaldo||dias>=7)?"#A32D2D":"#0F6E56";
 }
-function renderAll(){if(!P)return;renderDash();renderMovs();renderPres();renderTar();renderTarResumen();renderPre();renderPreResumen();renderMetas();renderSync();renderAviso()}
+function renderAll(){if(!P)return;renderDash();renderMovs();renderPres();renderTar();renderTarResumen();renderPre();renderPreResumen();renderPen();renderPenResumen();renderCta();renderAhoResumen();renderMetas();renderSync();renderAviso()}
 
 /* ---------- Respaldo ---------- */
 function payload(){return JSON.stringify({app:"finanzas",v:2,perfil:P.nombre,exportado:new Date().toISOString(),data:D},null,2)}
@@ -786,8 +1030,10 @@ function applyImport(txt){
   var d=o&&o.data?o.data:o;
   if(!d||!Array.isArray(d.movimientos))throw new Error("formato");
   var b=blankData();
-  D=migra({movimientos:d.movimientos,presupuestos:d.presupuestos,metas:d.metas,tarjetas:d.tarjetas,prestamos:d.prestamos,
+  D=migra({movimientos:d.movimientos,presupuestos:d.presupuestos,metas:d.metas,tarjetas:d.tarjetas,prestamos:d.prestamos,cuentas:d.cuentas,pendientes:d.pendientes,
      ultimoRespaldo:d.ultimoRespaldo,
+     nextC:Math.max(1,...(d.cuentas||[]).map(function(c){return (c.id||0)+1})),
+     nextD:Math.max(1,...(d.pendientes||[]).map(function(p){return (p.id||0)+1})),
      nextM:Math.max(1,...d.movimientos.map(function(m){return (m.id||0)+1})),
      nextG:Math.max(1,...(d.metas||[]).map(function(m){return (m.id||0)+1})),
      nextT:Math.max(1,...(d.tarjetas||[]).map(function(t){return (t.id||0)+1})),
